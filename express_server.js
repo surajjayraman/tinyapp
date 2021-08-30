@@ -19,6 +19,18 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+//trying to fetch variable from two separate routes.
+//local scope fails
+//Global works!
+const a = 1;
+app.get("/set", (req, res) => {
+  res.send(`a = ${a}`);
+});
+   
+app.get("/fetch", (req, res) => {
+  res.send(`a = ${a}`);
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
