@@ -19,7 +19,6 @@ const generateRandomString = function() {
   }
   return randomString;
 };
-console.log("Random string for shortURL:", generateRandomString());
 
 app.use(bodyParser.urlencoded({extended: true}));
 
