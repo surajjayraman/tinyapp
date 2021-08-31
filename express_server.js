@@ -1,5 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookies = require("cookie-parser");
+
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
@@ -21,6 +23,7 @@ const generateRandomString = function() {
 };
 
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookies());
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -47,16 +50,18 @@ app.get("/fetch", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase};
+  //console.log(req.cookies["username"]);
+  const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {username: req.cookies["username"]};
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
   res.render("urls_show", templateVars);
 });
 
@@ -66,7 +71,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
+  //console.log(req.body);  // Log the POST request body to the console
   
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
@@ -88,6 +93,13 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   urlDatabase[shortURL] = req.body.newURL;
+  res.redirect("/urls");
+});
+
+//The Login Route
+app.post("/login", (req, res) => {
+  const cookie = req.body.username;
+  res.cookie('username', cookie);
   res.redirect("/urls");
 });
 
