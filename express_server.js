@@ -11,6 +11,22 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// helper function to authenticate user
+const authenticateUser = (email, password) => {
+
+  // loop through the users db => object
+  const user = findUserByEmail(email);
+  // check that values of email and password if they match
+  if (user && user.password === password) {
+    // return user id if it matches
+    return user.id;
+  }
+  
+  // default return false
+  return false;
+  
+};
+
 /* Generates a random string, used for creating short URLs and userIDs */
 const generateRandomString = function() {
   let randomString = "";
@@ -96,8 +112,18 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect("/urls");
 });
 
-//The Login Route
+// The Login Route
+// Authenticate the user
 app.post("/login", (req, res) => {
+  // extract the information from the form with req.body
+  // email + password
+  const email = req.body.email;
+  const password = req.body.password;
+
+  // user must exist, check for the password
+  // either userId has a value or it is falsy
+  const userId = authenticateUser(email, password);
+
   const cookie = req.body.username;
   res.cookie('username', cookie);
   res.redirect("/urls");
@@ -105,8 +131,8 @@ app.post("/login", (req, res) => {
 
 //The Logout Route
 app.post("/logout", (req, res) => {
-    res.clearCookie("username");
-    res.redirect("/urls");
+  res.clearCookie("username");
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
