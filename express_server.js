@@ -40,6 +40,7 @@ const findUserByEmail = (email) => {
   return false;
 };
 
+<<<<<<< HEAD
 // validation: check for user credentials
 const authenticateUser = (email, password) => {
   // loop through the users db => object
@@ -55,6 +56,8 @@ const authenticateUser = (email, password) => {
   
 };
 
+=======
+>>>>>>> 6ed97c1f20005c4c09beb3dbe55a0d1694dd7dfa
 /* Generates a random string, used for creating short URLs and userIDs */
 const generateRandomString = function() {
   let randomString = "";
@@ -162,7 +165,11 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect("/urls");
 });
 
+<<<<<<< HEAD
 // Authenticate the user
+=======
+// Authentication
+>>>>>>> 6ed97c1f20005c4c09beb3dbe55a0d1694dd7dfa
 // The Login Route
 app.post("/login", (req, res) => {
   // extract the information from the form with req.body
