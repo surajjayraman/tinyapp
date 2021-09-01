@@ -94,10 +94,8 @@ app.get("/fetch", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  //console.log(req.cookies["username"]);
   // get the user id from the cookies
   const userId = req.cookies['user_id'];
-  //const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
   const templateVars = {urls: urlDatabase, user: users[userId]};
   res.render("urls_index", templateVars);
 });
@@ -105,7 +103,6 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   // get the user id from the cookies
   const userId = req.cookies['user_id'];
-  //const templateVars = {username: req.cookies["username"]};
   const templateVars = {user: users[userId]};
   res.render("urls_new", templateVars);
 });
@@ -187,8 +184,9 @@ app.post("/login", (req, res) => {
 });
 
 // The Logout Route
+// Handle logout by clearing the cookie
 app.post("/logout", (req, res) => {
-  res.clearCookie("username");
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
@@ -228,9 +226,7 @@ app.post("/register", (req, res) => {
   }
 });
 
-
-
-
+//listen on port specified for incoming user requests
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
