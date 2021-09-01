@@ -25,6 +25,21 @@ const users = {
   }
 };
 
+// validation: check that the user is not already in the database
+const findUserByEmail = (email) => {
+  // iterate through the users object
+  // looping through the keys with a for in
+  for (let userId in users) {
+    // try the match the email of each
+    if (users[userId]['email'] === email) {
+      // if it matches return truthy
+      return users[userId];
+    }
+  }
+  // if it never returned true, then return false by default
+  return false;
+};
+
 /* Generates a random string, used for creating short URLs and userIDs */
 const generateRandomString = function() {
   let randomString = "";
@@ -95,7 +110,7 @@ app.get("/u/:shortURL", (req, res) => {
 // The GET method route for User Registration
 // Display the register form
 app.get("/register", (req, res) => {
-  const templateVars = {user: null}
+  const templateVars = {user: null};
   res.render("urls_registration", templateVars);
 });
 
@@ -126,6 +141,7 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect("/urls");
 });
 
+// Authentication
 // The Login Route
 app.post("/login", (req, res) => {
   const cookie = req.body.username;
@@ -145,21 +161,34 @@ app.post("/register", (req, res) => {
   console.log("user info:", req.body);
   const email = req.body.email;
   const password = req.body.password;
-  // generate a new user id
-  const userId = generateRandomString();
-  // create a new user object
-  const newUser = {
-    id: userId,
-    email,
-    password
-  };
-  // Adding user info to usersDb
-  users[userId] = newUser;
-  // set the cookie => to remember the user (to log the user in)
-  // ask the browser to set a cookie
-  res.cookie('user_id', userId);
-  console.log("New User Info: ", newUser);
-  res.redirect("/urls");
+  // Check for empty email | password
+  if (email.length === 0 || password.length === 0) {
+    return res.status(400).send('Either email or password is empty!');
+  }
+  // validation: check that the user is not already in the database
+  const user = findUserByEmail(email);
+
+  // if user is not previously registered, we can add the user in the db
+  if (!user) {
+    // generate a new user id
+    const userId = generateRandomString();
+    // create a new user object
+    const newUser = {
+      id: userId,
+      email,
+      password
+    };
+    // Adding user info to usersDb
+    users[userId] = newUser;
+    // set the cookie => to remember the user (to log the user in)
+    // ask the browser to set a cookie
+    res.cookie('user_id', userId);
+    console.log("New User Info: ", newUser);
+    res.redirect("/urls");
+    
+  } else {
+    return res.status(403).send('User is already registered!');
+  }
 });
 
 
