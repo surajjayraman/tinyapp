@@ -11,6 +11,20 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+// object users will be used to store and access the users in the app
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
+
 /* Generates a random string, used for creating short URLs and userIDs */
 const generateRandomString = function() {
   let randomString = "";
@@ -70,7 +84,7 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-//The GET method route for User Registration
+// The GET method route for User Registration
 // Display the register form
 app.get("/register", (req, res) => {
   res.render("urls_registration");
@@ -87,7 +101,7 @@ app.post("/urls", (req, res) => {
   //res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
-//a POST route that removes a URL resource
+// POST route that removes a URL resource
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   if (urlDatabase[shortURL]) {
@@ -103,18 +117,44 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect("/urls");
 });
 
-//The Login Route
+// The Login Route
 app.post("/login", (req, res) => {
   const cookie = req.body.username;
   res.cookie('username', cookie);
   res.redirect("/urls");
 });
 
-//The Logout Route
+// The Logout Route
 app.post("/logout", (req, res) => {
   res.clearCookie("username");
   res.redirect("/urls");
 });
+
+// Handle Registration
+app.post("/register", (req, res) => {
+  // Extract the user info from the form
+  console.log("user info:", req.body);
+  const email = req.body.email;
+  const password = req.body.password;
+  // generate a new user id
+  const userId = generateRandomString();
+  // create a new user object
+  const newUser = {
+    id: userId,
+    email,
+    password
+  };
+  // Adding user info to usersDb
+  users[userId] = newUser;
+  // set the cookie => to remember the user (to log the user in)
+  // ask the browser to set a cookie
+  res.cookie('user_id', userId);
+  console.log("New User Info: ", newUser);
+  res.redirect("/urls");
+});
+
+
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
