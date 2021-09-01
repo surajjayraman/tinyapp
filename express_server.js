@@ -70,6 +70,13 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
+//The GET method route for User Registration
+// Display the register form
+app.get("/register", (req, res) => {
+  res.render("urls_registration");
+});
+
+
 app.post("/urls", (req, res) => {
   //console.log(req.body);  // Log the POST request body to the console
   
@@ -105,8 +112,8 @@ app.post("/login", (req, res) => {
 
 //The Logout Route
 app.post("/logout", (req, res) => {
-    res.clearCookie("username");
-    res.redirect("/urls");
+  res.clearCookie("username");
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
