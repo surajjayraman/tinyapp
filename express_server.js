@@ -67,11 +67,11 @@ const authenticateUser = (email, password) => {
 // Helper function which returns the URLs
 // where the userID is equal to the id of
 // the currently logged-in user.
-const urlsForUser = (id) => {
-  let userUrls = {};
-  for (const shortURL in urlDatabase) {
-    if (urlDatabase[shortURL]['userID'] === id) {
-      userUrls[shortURL] = urlDatabase[shortURL];
+const urlsForUser = (id, urlDB) => {
+  const userUrls = {};
+  for (const shortURL in urlDB) {
+    if (urlDB[shortURL]['userID'] === id) {
+      userUrls[shortURL] = urlDB[shortURL];
     }
   }
   return userUrls;
@@ -123,7 +123,7 @@ app.get("/urls", (req, res) => {
     return res.redirect("/login");
   }
   // filter urlDatabase for user related urls
-  const userURLS = urlsForUser(userId);
+  const userURLS = urlsForUser(userId, urlDatabase);
   const templateVars = {urls: userURLS, user: users[userId]};
   res.render("urls_index", templateVars);
 });
