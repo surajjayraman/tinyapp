@@ -64,6 +64,19 @@ const authenticateUser = (email, password) => {
   
 };
 
+// Helper function which returns the URLs
+// where the userID is equal to the id of
+// the currently logged-in user.
+const urlsForUser = (id) => {
+  let userUrls = {};
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL]['userID'] === id) {
+      userUrls[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userUrls;
+};
+
 /* Generates a random string, used for creating short URLs and userIDs */
 const generateRandomString = function() {
   let randomString = "";
@@ -105,7 +118,13 @@ app.get("/fetch", (req, res) => {
 app.get("/urls", (req, res) => {
   // get the user id from the cookies
   const userId = req.cookies['user_id'];
-  const templateVars = {urls: urlDatabase, user: users[userId]};
+  //if user not logged in => redirect to login page
+  if (!userId) {
+    return res.redirect("/login");
+  }
+  // filter urlDatabase for user related urls
+  const userURLS = urlsForUser(userId);
+  const templateVars = {urls: userURLS, user: users[userId]};
   res.render("urls_index", templateVars);
 });
 
@@ -134,7 +153,6 @@ app.get("/urls/:shortURL", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL]['longURL'];
-  console.log(longURL);
   if (longURL.length === 0) {
     return res.status(404).send("The short URL you are trying to access does not correspond with a long URL.");
   }
@@ -166,7 +184,7 @@ app.post("/urls", (req, res) => {
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userId
+    userID: userId
   };
   res.redirect(`/urls/${shortURL}`);
 
@@ -229,7 +247,6 @@ app.post("/logout", (req, res) => {
 // Handle Registration
 app.post("/register", (req, res) => {
   // Extract the user info from the form
-  console.log("user info:", req.body);
   const email = req.body.email;
   const password = req.body.password;
   // Check for empty email | password
@@ -254,7 +271,6 @@ app.post("/register", (req, res) => {
     // set the cookie => to remember the user (to log the user in)
     // ask the browser to set a cookie
     res.cookie('user_id', userId);
-    console.log("New User Info: ", newUser);
     res.redirect("/urls");
     
   } else {
