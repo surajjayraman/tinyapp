@@ -36,14 +36,14 @@ const users = {
 };
 
 // validation: check that the user is not already in the database
-const findUserByEmail = (email) => {
+const getUserByEmail = function(email, database) {
   // iterate through the users object
   // looping through the keys with a for in
-  for (let userId in users) {
+  for (const userId in database) {
     // try the match the email of each
-    if (users[userId]['email'] === email) {
+    if (database[userId]['email'] === email) {
       // if it matches return truthy
-      return users[userId];
+      return database[userId];
     }
   }
   // if it never returned true, then return false by default
@@ -51,9 +51,9 @@ const findUserByEmail = (email) => {
 };
 
 // validation: check for user credentials
-const authenticateUser = (email, password) => {
+const authenticateUser = (email, password, database) => {
   // loop through the users db => object
-  const user = findUserByEmail(email);
+  const user = getUserByEmail(email, database);
   // check that values of email and password if they match
   if (user && bcrypt.compareSync(password, user.password)) {
     // return user id if it matches
@@ -227,7 +227,7 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   // user must exist, check for the password
   // either userId has a value or it is falsy
-  const userId = authenticateUser(email, password);
+  const userId = authenticateUser(email, password, users);
 
   if (userId) {
     // Set the cookie with the user id
@@ -257,7 +257,7 @@ app.post("/register", (req, res) => {
     return res.status(400).send('Either email or password is empty!');
   }
   // validation: check that the user is not already in the database
-  const user = findUserByEmail(email);
+  const user = getUserByEmail(email, users);
 
   // if user is not previously registered, we can add the user in the db
   if (!user) {
