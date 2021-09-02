@@ -3,6 +3,9 @@ const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require('bcrypt');
 
+//helper module functions
+const {getUserByEmail} = require("./helpers");
+
 const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
@@ -33,21 +36,6 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   }
-};
-
-// validation: check that the user is not already in the database
-const getUserByEmail = function(email, database) {
-  // iterate through the users object
-  // looping through the keys with a for in
-  for (const userId in database) {
-    // try the match the email of each
-    if (database[userId]['email'] === email) {
-      // if it matches return truthy
-      return database[userId];
-    }
-  }
-  // if it never returned true, then return false by default
-  return false;
 };
 
 // validation: check for user credentials
