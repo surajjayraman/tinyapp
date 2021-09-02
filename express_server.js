@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookies = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require('bcrypt');
 
 const app = express();
@@ -90,35 +90,27 @@ const generateRandomString = function() {
 };
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookies());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['CHIHUAHAHAH'],
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
+/* ROUTES Implementation */
 app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
-//trying to fetch variable from two separate routes.
-//local scope fails
-//Global works!
-const a = 1;
-app.get("/set", (req, res) => {
-  res.send(`a = ${a}`);
-});
-   
-app.get("/fetch", (req, res) => {
-  res.send(`a = ${a}`);
+  // get the user id from the cookies
+  const userId = req.session.userId;
+  //if user not logged in => redirect to login page
+  if (!userId) {
+    return res.redirect("/login");
+  }
+  return res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
   // get the user id from the cookies
-  const userId = req.cookies['user_id'];
+  const userId = req.session.userId;
   //if user not logged in => redirect to login page
   if (!userId) {
     return res.redirect("/login");
@@ -131,7 +123,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   // get the user id from the cookies
-  const userId = req.cookies['user_id'];
+  const userId = req.session.userId;
   // if user not logged in redirect to login page
   if (!userId) {
     return res.redirect("/login");
@@ -142,7 +134,7 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   // get the user id from the cookies
-  const userId = req.cookies['user_id'];
+  const userId = req.session.userId;
   if (!urlDatabase[req.params.shortURL]) {
     return res.status(404).send("The short URL you are trying to access does not correspond with a long URL.");
   }
@@ -169,15 +161,20 @@ app.get("/register", (req, res) => {
 
 // Display the Login form
 app.get("/login", (req, res) => {
-  const templateVars = {user : null};
-  res.render("urls_login", templateVars);
+  // get the user id from the cookies
+  const userId = req.session.userId;
+  if (!userId) {
+    const templateVars = {user : null};
+    return res.render("urls_login", templateVars);
+  }
+  return res.redirect("/urls");
 });
 
 
 app.post("/urls", (req, res) => {
   
   // get the user id from the cookies
-  const userId = req.cookies['user_id'];
+  const userId = req.session.userId;
   // if user not logged in redirect to login page
   if (!userId) {
     return res.status(401).send("You must be logged in to a valid account to create short URLs.");
@@ -195,7 +192,7 @@ app.post("/urls", (req, res) => {
 // POST route that removes a URL resource
 app.post("/urls/:shortURL/delete", (req, res) => {
   // get the user id from the cookies
-  const userId = req.cookies['user_id'];
+  const userId = req.session.userId;
   // if user not logged in redirect to login page
   if (!userId) {
     return res.status(401).send("You must be logged in to a valid account to delete short URLs.");
@@ -211,7 +208,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   // get the user id from the cookies
-  const userId = req.cookies['user_id'];
+  const userId = req.session.userId;
   // if user not logged in display error msg
   if (!userId) {
     return res.status(401).send("You must be logged in to a valid account to create short URLs.");
@@ -234,7 +231,7 @@ app.post("/login", (req, res) => {
 
   if (userId) {
     // Set the cookie with the user id
-    res.cookie('user_id', userId);
+    req.session.userId = userId;
     // redirect to /urls
     res.redirect('/urls');
   } else {
@@ -246,7 +243,7 @@ app.post("/login", (req, res) => {
 // The Logout Route
 // Handle logout by clearing the cookie
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/urls");
 });
 
@@ -278,7 +275,7 @@ app.post("/register", (req, res) => {
     users[userId] = newUser;
     // set the cookie => to remember the user (to log the user in)
     // ask the browser to set a cookie
-    res.cookie('user_id', userId);
+    req.session.userId = userId;
     res.redirect("/urls");
     
   } else {
