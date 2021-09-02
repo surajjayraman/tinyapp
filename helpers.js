@@ -10,8 +10,6 @@ const getUserByEmail = function(email, database) {
       return database[userId];
     }
   }
-  // if it never returned true, then return false by default
-  return false;
 };
 
 module.exports = {
