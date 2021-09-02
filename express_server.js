@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookies = require("cookie-parser");
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -54,7 +55,7 @@ const authenticateUser = (email, password) => {
   // loop through the users db => object
   const user = findUserByEmail(email);
   // check that values of email and password if they match
-  if (user && user.password === password) {
+  if (user && bcrypt.compareSync(password, user.password)) {
     // return user id if it matches
     return user.id;
   }
@@ -227,7 +228,6 @@ app.post("/login", (req, res) => {
   // email + password
   const email = req.body.email;
   const password = req.body.password;
-
   // user must exist, check for the password
   // either userId has a value or it is falsy
   const userId = authenticateUser(email, password);
@@ -266,11 +266,13 @@ app.post("/register", (req, res) => {
   if (!user) {
     // generate a new user id
     const userId = generateRandomString();
+    // hash the password
+    const hashedPassword = bcrypt.hashSync(password, 10);
     // create a new user object
     const newUser = {
       id: userId,
       email,
-      password
+      password: hashedPassword
     };
     // Adding user info to usersDb
     users[userId] = newUser;
