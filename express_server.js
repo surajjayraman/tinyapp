@@ -103,6 +103,10 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   // get the user id from the cookies
   const userId = req.cookies['user_id'];
+  // if user not logged in redirect to login page
+  if (!userId) {
+    return res.redirect("/login");
+  }
   const templateVars = {user: users[userId]};
   res.render("urls_new", templateVars);
 });
@@ -134,7 +138,14 @@ app.get("/login", (req, res) => {
 
 
 app.post("/urls", (req, res) => {
-  //console.log(req.body);  // Log the POST request body to the console
+  
+  // get the user id from the cookies
+  const userId = req.cookies['user_id'];
+  // if user not logged in redirect to login page
+  if (!userId) {
+    return res.status(403).send('Access Denied');
+  }
+      
   
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
