@@ -197,7 +197,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const userId = req.cookies['user_id'];
   // if user not logged in redirect to login page
   if (!userId) {
-    return res.redirect("/login");
+    return res.status(401).send("You must be logged in to a valid account to delete short URLs.");
   }
   const shortURL = req.params.shortURL;
   if (urlDatabase[shortURL]) {
@@ -209,6 +209,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // a POST route that updates a URL resource
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
+  // get the user id from the cookies
+  const userId = req.cookies['user_id'];
+  // if user not logged in display error msg
+  if (!userId) {
+    return res.status(401).send("You must be logged in to a valid account to create short URLs.");
+  }
   urlDatabase[shortURL]['longURL'] = req.body.newURL;
   res.redirect("/urls");
 });
