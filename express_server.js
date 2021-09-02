@@ -114,6 +114,10 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   // get the user id from the cookies
   const userId = req.cookies['user_id'];
+  // if user not logged in redirect to login page
+  if (!userId) {
+    return res.redirect("/login");
+  }
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[userId] };
   res.render("urls_show", templateVars);
 });
@@ -145,8 +149,6 @@ app.post("/urls", (req, res) => {
   if (!userId) {
     return res.status(403).send('Access Denied');
   }
-      
-  
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
@@ -156,6 +158,12 @@ app.post("/urls", (req, res) => {
 
 // POST route that removes a URL resource
 app.post("/urls/:shortURL/delete", (req, res) => {
+  // get the user id from the cookies
+  const userId = req.cookies['user_id'];
+  // if user not logged in redirect to login page
+  if (!userId) {
+    return res.redirect("/login");
+  }
   const shortURL = req.params.shortURL;
   if (urlDatabase[shortURL]) {
     delete urlDatabase[shortURL];
