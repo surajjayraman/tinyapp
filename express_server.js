@@ -7,8 +7,17 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  //"b2xVn2": "http://www.lighthouselabs.ca",
+  //"9sm5xK": "http://www.google.com"
+
+  b6UTxQ: {
+    longURL: "https://www.tsn.ca",
+    userID: "aJ48lW"
+  },
+  i3BoGr: {
+    longURL: "https://www.google.ca",
+    userID: "aJ48lW"
+  }
 };
 
 // object users will be used to store and access the users in the app
@@ -114,17 +123,22 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   // get the user id from the cookies
   const userId = req.cookies['user_id'];
-  // if user not logged in redirect to login page
-  if (!userId) {
-    return res.redirect("/login");
+  if (!urlDatabase[req.params.shortURL]) {
+    return res.status(404).send("The short URL you are trying to access does not correspond with a long URL.");
   }
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: users[userId] };
+  const templateVars = { shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL]['longURL'],
+    user: users[userId] };
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  const longURL = urlDatabase[req.params.shortURL]['longURL'];
+  console.log(longURL);
+  if (longURL.length === 0) {
+    return res.status(404).send("The short URL you are trying to access does not correspond with a long URL.");
+  }
+  return res.redirect(longURL);
 });
 
 // The GET method route for User Registration
@@ -147,10 +161,13 @@ app.post("/urls", (req, res) => {
   const userId = req.cookies['user_id'];
   // if user not logged in redirect to login page
   if (!userId) {
-    return res.status(403).send('Access Denied');
+    return res.status(401).send("You must be logged in to a valid account to create short URLs.");
   }
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL,
+    userId
+  };
   res.redirect(`/urls/${shortURL}`);
 
   //res.send("Ok");         // Respond with 'Ok' (we will replace this)
@@ -174,7 +191,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // a POST route that updates a URL resource
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.newURL;
+  urlDatabase[shortURL]['longURL'] = req.body.newURL;
   res.redirect("/urls");
 });
 
