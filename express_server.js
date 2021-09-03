@@ -104,8 +104,13 @@ app.get("/u/:shortURL", (req, res) => {
 // The GET method route for User Registration
 // Display the register form
 app.get("/register", (req, res) => {
-  const templateVars = {user: null};
-  res.render("urls_registration", templateVars);
+  // get the user id from the cookies
+  const userId = req.session.userId;
+  if (!userId) {
+    const templateVars = {user: null};
+    return res.render("urls_registration", templateVars);
+  }
+  return res.redirect("/urls");
 });
 
 // Display the Login form
