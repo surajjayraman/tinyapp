@@ -182,6 +182,15 @@ app.post("/urls/:shortURL", (req, res) => {
   if (!userId) {
     return res.status(401).send("You must be logged in to a valid account to create short URLs.");
   }
+  // check if shortURL exists else send HTML error msg.
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("The short URL you are trying to access does not correspond with a long URL.");
+  }
+  // logged in as a user who doesn't own the :id
+  // should provide a relevant html error message.
+  if (urlDatabase[shortURL]['userID'] !== userId) {
+    return res.status(401).send("You are not authorized to view this short URL.");
+  }
   urlDatabase[shortURL]['longURL'] = req.body.newURL;
   res.redirect("/urls");
 });
