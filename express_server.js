@@ -10,10 +10,8 @@ const app = express();
 const PORT = 8080; // default port 8080
 app.set("view engine", "ejs");
 
+// in-memory database of shortURLs mapped to userID && longURL
 const urlDatabase = {
-  //"b2xVn2": "http://www.lighthouselabs.ca",
-  //"9sm5xK": "http://www.google.com"
-
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
     userID: "aJ48lW"
@@ -89,13 +87,23 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   // get the user id from the cookies
   const userId = req.session.userId;
-  //if user not logged in => provide relevant HTML error message.
+  // extract the shortURL
+  const shortURL = req.params.shortURL;
+  // if user not logged in => provide relevant HTML error message.
   if (!userId) {
     return res.status(401).send("You must be logged in to a valid account to create short URLs.");
   }
-  if (!urlDatabase[req.params.shortURL]) {
+  // check if shortURL exists else send HTML error msg.
+  if (!urlDatabase[shortURL]) {
     return res.status(404).send("The short URL you are trying to access does not correspond with a long URL.");
   }
+  // logged in as a user who doesn't own the :id
+  // should provide a relevant html error message.
+  if (urlDatabase[shortURL]['userID'] !== userId) {
+    return res.status(401).send("You are not authorized to view this short URL.");
+  }
+  
+  // shortURL exists and User authorized
   const templateVars = { shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL]['longURL'],
     user: users[userId] };
