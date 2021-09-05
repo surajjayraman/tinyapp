@@ -48,9 +48,9 @@ app.use(cookieSession({
 app.get("/", (req, res) => {
   // get the user id from the cookies
   const userId = req.session.userId;
-  //if user not logged in => redirect to login page
+  //if user not logged in => provide relevant HTML error msg.
   if (!userId) {
-    return res.redirect("/login");
+    return res.status(401).send("You must be logged in to a valid account to create short URLs.");
   }
   return res.redirect("/urls");
 });
@@ -110,8 +110,27 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// GET to/u/:idfor a shortURL that doesn't exist in the database
+// should provide a relevant html error message.
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL]['longURL'];
+  // get the user id from the cookies
+  const userId = req.session.userId;
+  // extract the shortURL
+  const shortURL = req.params.shortURL;
+  // if user not logged in => provide relevant HTML error message.
+  if (!userId) {
+    return res.status(401).send("You must be logged in to a valid account to create short URLs.");
+  }
+  // check if shortURL exists else send HTML error msg.
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("The short URL you are trying to access does not correspond with a long URL.");
+  }
+  // logged in as a user who doesn't own the :id
+  // should provide a relevant html error message.
+  if (urlDatabase[shortURL]['userID'] !== userId) {
+    return res.status(401).send("You are not authorized to view this short URL.");
+  }
+  const longURL = urlDatabase[shortURL]['longURL'];
   if (longURL.length === 0) {
     return res.status(404).send("The short URL you are trying to access does not correspond with a long URL.");
   }
@@ -162,11 +181,22 @@ app.post("/urls", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   // get the user id from the cookies
   const userId = req.session.userId;
-  // if user not logged in redirect to login page
+  // extract shortURL from req
+  const shortURL = req.params.shortURL;
+  // if user not logged in show HTML error msg.
   if (!userId) {
     return res.status(401).send("You must be logged in to a valid account to delete short URLs.");
   }
-  const shortURL = req.params.shortURL;
+  // check if shortURL exists else send HTML error msg.
+  if (!urlDatabase[shortURL]) {
+    return res.status(404).send("The short URL you are trying to access does not correspond with a long URL.");
+  }
+  // logged in as a user who doesn't own the :id
+  // should provide a relevant html error message.
+  if (urlDatabase[shortURL]['userID'] !== userId) {
+    return res.status(401).send("You are not authorized to view this short URL.");
+  }
+  
   if (urlDatabase[shortURL]) {
     delete urlDatabase[shortURL];
   }
