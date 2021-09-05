@@ -60,9 +60,9 @@ app.get("/", (req, res) => {
 app.get("/urls", (req, res) => {
   // get the user id from the cookies
   const userId = req.session.userId;
-  //if user not logged in => redirect to login page
+  //if user not logged in => provide relevant HTML error message.
   if (!userId) {
-    return res.redirect("/login");
+    return res.status(401).send("You must be logged in to a valid account to create short URLs.");
   }
   // filter urlDatabase for user related urls
   const userURLS = urlsForUser(userId, urlDatabase);
@@ -138,9 +138,7 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID: userId
   };
-  res.redirect(`/urls/${shortURL}`);
-
-  //res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  res.redirect(`/urls/${shortURL}`);  
 });
 
 // POST route that removes a URL resource
@@ -190,7 +188,7 @@ app.post("/login", (req, res) => {
     res.redirect('/urls');
   } else {
     // user is not authenticated => error message
-    res.status(403).send('Wrong credentials');
+    res.status(403).send('Wrong credentials. Please try again.');
   }
 });
 
