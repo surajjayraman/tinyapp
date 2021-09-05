@@ -57,6 +57,8 @@ app.get("/", (req, res) => {
   return res.redirect("/urls");
 });
 
+// A GET to /urls while not logged in
+// should provide a relevant html error message.
 app.get("/urls", (req, res) => {
   // get the user id from the cookies
   const userId = req.session.userId;
@@ -81,9 +83,16 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+// GET to /urls/:id while logged out,
+// or logged in as a user who doesn't own the :id
+// should provide a relevant html error message.
 app.get("/urls/:shortURL", (req, res) => {
   // get the user id from the cookies
   const userId = req.session.userId;
+  //if user not logged in => provide relevant HTML error message.
+  if (!userId) {
+    return res.status(401).send("You must be logged in to a valid account to create short URLs.");
+  }
   if (!urlDatabase[req.params.shortURL]) {
     return res.status(404).send("The short URL you are trying to access does not correspond with a long URL.");
   }
@@ -138,7 +147,7 @@ app.post("/urls", (req, res) => {
     longURL: req.body.longURL,
     userID: userId
   };
-  res.redirect(`/urls/${shortURL}`);  
+  res.redirect(`/urls/${shortURL}`);
 });
 
 // POST route that removes a URL resource
