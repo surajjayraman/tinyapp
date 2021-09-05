@@ -48,9 +48,9 @@ app.use(cookieSession({
 app.get("/", (req, res) => {
   // get the user id from the cookies
   const userId = req.session.userId;
-  //if user not logged in => provide relevant HTML error msg.
+  //if user not logged in => redirect to /login.
   if (!userId) {
-    return res.status(401).send("You must be logged in to a valid account to create short URLs.");
+    return res.redirect("/login");
   }
   return res.redirect("/urls");
 });
